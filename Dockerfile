@@ -24,6 +24,10 @@ COPY --from=builder ./app/CLIProxyAPI /CLIProxyAPI/CLIProxyAPI
 
 COPY config.example.yaml /CLIProxyAPI/config.example.yaml
 
+RUN apk add --no-cache curl && \
+    curl -sL https://github.com/jvictormaynard/Cli-Proxy-API-Management-Center/releases/download/v1.0.0-ams/management.html -o /CLIProxyAPI/management.html && \
+    apk del curl
+
 WORKDIR /CLIProxyAPI
 
 EXPOSE 8317
