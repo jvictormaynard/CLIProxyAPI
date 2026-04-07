@@ -1,10 +1,41 @@
-FROM eceasy/cli-proxy-api:latest
+FROM golang:1.26-alpine AS builder
 
-# Custom config for AMS deployment
-COPY CLIProxyAPI/config.yaml /CLIProxyAPI/config.yaml
+WORKDIR /app
+
+COPY go.mod go.sum ./
+
+RUN go mod download
+
+COPY . .
+
+ARG VERSION=dev
+ARG COMMIT=none
+ARG BUILD_DATE=unknown
+
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X 'main.Version=${VERSION}' -X 'main.Commit=${COMMIT}' -X 'main.BuildDate=${BUILD_DATE}'" -o ./CLIProxyAPI ./cmd/server/
+
+FROM alpine:3.22.0
+
+RUN apk add --no-cache tzdata
+
+RUN mkdir /CLIProxyAPI
+
+COPY --from=builder /app/CLIProxyAPI /CLIProxyAPI/CLIProxyAPI
+RUN chmod 0755 /CLIProxyAPI/CLIProxyAPI
+
 COPY config.example.yaml /CLIProxyAPI/config.example.yaml
+COPY CLIProxyAPI/config.yaml /CLIProxyAPI/config.yaml
 
-# Management UI from AMS fork
 RUN apk add --no-cache curl && \
     curl -sL https://github.com/jvictormaynard/Cli-Proxy-API-Management-Center/releases/download/v1.0.0-ams/management.html -o /CLIProxyAPI/management.html && \
     apk del curl
+
+WORKDIR /CLIProxyAPI
+
+EXPOSE 8317
+
+ENV TZ=Asia/Shanghai
+
+RUN cp /usr/share/zoneinfo/${TZ} /etc/localtime && echo "${TZ}" > /etc/timezone
+
+ENTRYPOINT ["sh", "-c", "exec ./CLIProxyAPI"]
