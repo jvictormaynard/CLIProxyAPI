@@ -1,0 +1,14 @@
+host: ""
+port: 8317
+auth-dir: "/root/.cli-proxy-api"
+
+api-keys:
+  - "ams-proxy-key-2026"
+
+debug: false
+request-retry: 3
+
+remote-management:
+  allow-remote: false
+  secret-key: ""
+  disable-control-panel: false
