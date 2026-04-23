@@ -1,4 +1,4 @@
-FROM eceasy/cli-proxy-api:latest
+FROM eceasy/cli-proxy-api:v6.9.35
 
 # Custom config for AMS deployment
 COPY CLIProxyAPI/config.yaml /CLIProxyAPI/config.yaml
